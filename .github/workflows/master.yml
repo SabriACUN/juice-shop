@@ -14,6 +14,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Run Juice Shop (Docker)
+        run: |
+          docker run -d -p 3000:3000 bkimminich/juice-shop
+
+      - name: Wait for Juice Shop
+        run: |
+          sleep 15
+          curl --retry 5 --retry-delay 5 --retry-all-errors http://localhost:3000
+
       - name: Run Syft (SBOM)
         run: |
           docker run --rm -v ${{ github.workspace }}:/project anchore/syft:latest dir:/project -o table
