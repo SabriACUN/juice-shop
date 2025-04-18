@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [master]
 
-
 jobs:
   security-checks:
     runs-on: ubuntu-latest
@@ -19,14 +18,9 @@ jobs:
         run: |
           docker run --rm -v ${{ github.workspace }}:/project anchore/syft:latest dir:/project -o table
 
-      - name: Run Semgrep
+      - name: Run Semgrep (Docker)
         run: |
-          sudo rm -f /usr/local/bin/semgrep
-          curl -sL https://github.com/returntocorp/semgrep/releases/latest/download/semgrep-linux -o semgrep
-          chmod +x semgrep
-          sudo mv semgrep /usr/local/bin/
-          semgrep --version
-          semgrep scan --config auto
+          docker run --rm -v ${{ github.workspace }}:/src returntocorp/semgrep semgrep scan --config auto
 
       - name: Run Gitleaks
         run: |
