@@ -10,24 +10,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Syft and generate SBOM
+      - name: Run Syft (SBOM)
         run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-          syft dir:. -o table
+          docker run --rm -v ${{ github.workspace }}:/project anchore/syft:latest dir:/project -o table
 
       - name: Run Semgrep
         run: |
-          curl -sL https://github.com/returntocorp/semgrep/releases/latest/download/semgrep-linux -o semgrep
-          chmod +x semgrep
-          sudo mv semgrep /usr/local/bin/
-          semgrep scan --config auto
+          docker run --rm -v ${{ github.workspace }}:/src returntocorp/semgrep semgrep scan --config auto
 
       - name: Run Gitleaks
         run: |
-          curl -sL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o gitleaks
-          chmod +x gitleaks
-          sudo mv gitleaks /usr/local/bin/
-          gitleaks detect --source=. --verbose
+          docker run --rm -v ${{ github.workspace }}:/path zricethezav/gitleaks:latest detect --source=/path --verbose
 
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.11.0
